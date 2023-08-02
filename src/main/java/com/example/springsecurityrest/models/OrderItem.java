@@ -11,7 +11,7 @@ public class OrderItem {
     private int quantity;
 
     @Id
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "orderId",nullable = false)
     private Order order;
 

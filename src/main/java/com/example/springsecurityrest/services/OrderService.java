@@ -1,5 +1,6 @@
 package com.example.springsecurityrest.services;
 
+import com.example.springsecurityrest.constants.MessageEnum;
 import com.example.springsecurityrest.dto.OrderDto;
 import com.example.springsecurityrest.dto.OrderItemRequestDto;
 import com.example.springsecurityrest.exception.ResourceNotFoundException;
@@ -52,7 +53,7 @@ public class OrderService implements IOrderService {
                     orderItem.setOrder(order);
                     orderItemList.add(orderItem);
                 } else {
-                    throw new ResourceNotFoundException("Product not found with ID: " + item.getProductId());
+                    throw new ResourceNotFoundException(MessageEnum.NOT_FOUND.getFormattedMessage("product", item.getProductId()));
                 }
             }
         }

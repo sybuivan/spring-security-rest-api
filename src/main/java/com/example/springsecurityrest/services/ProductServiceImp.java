@@ -1,5 +1,7 @@
 package com.example.springsecurityrest.services;
 
+import com.example.springsecurityrest.constants.MessageEnum;
+import com.example.springsecurityrest.exception.ResourceNotFoundException;
 import com.example.springsecurityrest.interfaces.IProductService;
 import com.example.springsecurityrest.models.Product;
 import com.example.springsecurityrest.models.UserWebClient;
@@ -36,13 +38,15 @@ public class ProductServiceImp implements IProductService {
     }
 
     @Override
-    public Product updateProduct(Product product) {
-        Product product_update = new Product();
-        product_update.setProductName(product.getProductName());
-        product_update.setPrice(product.getPrice());
-        product_update.setDescription(product.getDescription());
+    public Product updateProduct(Long productId, Product product) {
+        Product exitstingProduct = productRepository.findById(productId).orElseThrow(() ->
+            new ResourceNotFoundException(MessageEnum.NOT_FOUND.getFormattedMessage("product", productId)));
 
-        return productRepository.save(product);
+        exitstingProduct.setProductName(product.getProductName());
+        exitstingProduct.setPrice(product.getPrice());
+        exitstingProduct.setDescription(product.getDescription());
+
+        return productRepository.save(exitstingProduct);
     }
 
     @Override
@@ -53,7 +57,6 @@ public class ProductServiceImp implements IProductService {
 
     @Override
     public Optional<Product> getProductById(Long id) {
-
         return productRepository.findById(id);
     }
 

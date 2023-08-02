@@ -1,6 +1,6 @@
 package com.example.springsecurityrest.payload.response;
 
-import com.example.springsecurityrest.constants.Status;
+import com.example.springsecurityrest.constants.StatusEnum;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -13,15 +13,15 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class ResponseObject<T> {
     private String message;
-    private Status status;
+    private StatusEnum status;
     private T data;
 
-    public ResponseObject(String message, Status status) {
+    public ResponseObject(String message, StatusEnum status) {
         this.message = message;
         this.status = status;
     }
 
-    public ResponseObject(String message, Status status, T data) {
+    public ResponseObject(String message, StatusEnum status, T data) {
         this.status = status;
         this.message = message;
         this.data = data;

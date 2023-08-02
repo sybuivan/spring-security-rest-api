@@ -27,5 +27,8 @@ public class Product {
     @NotNull(message = "price not empty")
     private int price;
 
+//    @NotBlank(message = "imageURL not empty")
+//    private String imageURl;
+
     private String description;
 }

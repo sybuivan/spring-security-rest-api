@@ -1,11 +1,13 @@
 package com.example.springsecurityrest.controller;
 
-import com.example.springsecurityrest.constants.Status;
+import com.example.springsecurityrest.constants.MessageEnum;
+import com.example.springsecurityrest.constants.StatusEnum;
 import com.example.springsecurityrest.interfaces.IRefreshToken;
 import com.example.springsecurityrest.models.Product;
 import com.example.springsecurityrest.payload.response.ResponseObject;
 import com.example.springsecurityrest.interfaces.IProductService;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,16 +21,16 @@ import java.util.Optional;
 public class ProductController {
 
     @Autowired
-    IProductService IProductService;
+    IProductService productService;
 
     @Autowired
     private IRefreshToken refreshToken;
 
     @GetMapping("")
     ResponseEntity<ResponseObject>  getProductList(@RequestParam(required = false, defaultValue = "") String productName) {
-        List<Product> productList = IProductService.getProductList(productName);
-        ResponseObject responseObject = new ResponseObject("Get product list successfully",
-                Status.SUCCESS,productList);
+        List<Product> productList = productService.getProductList(productName);
+        ResponseObject responseObject = new ResponseObject(MessageEnum.GET.getFormattedMessage("product list"),
+                StatusEnum.SUCCESS,productList);
         return ResponseEntity.status(HttpStatus.OK).body(responseObject);
     }
 
@@ -36,17 +38,17 @@ public class ProductController {
     @RolesAllowed("ROLE_ADMIN")
     ResponseEntity<ResponseObject> postProduct(@RequestBody Product product) {
 
-        List<Product> productList = IProductService.findByProductNameAndPrice(
+        List<Product> productList = productService.findByProductNameAndPrice(
                 product.getProductName(), product.getPrice()
         );
         if(productList.size() == 0) {
-            ResponseObject responseObject = new ResponseObject("Save product successfully",
-                    Status.SUCCESS, IProductService.addProduct(product));
+            ResponseObject responseObject = new ResponseObject(MessageEnum.CREATE.getFormattedMessage("product"),
+                    StatusEnum.SUCCESS, productService.addProduct(product));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(responseObject);
         } else {
             ResponseObject responseObject = new ResponseObject("Product already exists",
-                    Status.FAILED);
+                    StatusEnum.FAILED);
 
             return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseObject);
         }
@@ -54,41 +56,36 @@ public class ProductController {
 
     @GetMapping("/{productId}")
     ResponseEntity<?> getProductById(@PathVariable Long productId) {
-        Optional<Product> optionalProduct = IProductService.getProductById(productId);
+        Optional<Product> optionalProduct = productService.getProductById(productId);
 
         if(optionalProduct.isPresent()) {
             Product productPresent = optionalProduct.get();
-            return ResponseEntity.ok(new ResponseObject("Product get success.", Status.SUCCESS, productPresent));
+            return ResponseEntity.ok(new ResponseObject(MessageEnum.GET.getFormattedMessage("product"), StatusEnum.SUCCESS, productPresent));
 //            return ResponseEntity.ok(productPresent);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject(
-                    "Product with ID " + productId + " not found." , Status.FAILED
+                MessageEnum.NOT_FOUND.getFormattedMessage("product", productId), StatusEnum.FAILED
             ));
         }
     }
 
     @DeleteMapping("/{productId}")
     ResponseEntity<ResponseObject> deleteProductById(@PathVariable Long productId) {
-        Optional<Product> optionalProduct = IProductService.getProductById(productId);
+        Optional<Product> optionalProduct = productService.getProductById(productId);
 
         if(optionalProduct.isPresent()) {
-            Product productPresent = optionalProduct.get();
-            return ResponseEntity.ok(new ResponseObject("Product delete success.", Status.SUCCESS));
+            productService.deleteProductById(productId);
+            return ResponseEntity.ok(new ResponseObject(MessageEnum.DELETE.getFormattedMessage("product"), StatusEnum.SUCCESS));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject(
-                    "Product with ID " + productId + " not found." , Status.FAILED
+                    MessageEnum.NOT_FOUND.getFormattedMessage("product", productId), StatusEnum.FAILED
             ));
         }
     }
 
     @PutMapping("/{productId}")
-    ResponseEntity<?> updateProductById(@PathVariable Long productId, @RequestBody Product product) {
-
-        Optional<Product> optionalProduct = IProductService.getProductById(productId);
-        if(optionalProduct.isPresent()) {
-            
-        }
-
-        return null;
+    ResponseEntity<?> updateProductById(@PathVariable Long productId, @Valid @RequestBody Product product) {
+           return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject(MessageEnum.UPDATE.getFormattedMessage("product"), StatusEnum.SUCCESS,
+               productService.updateProduct(productId, product)));
     }
 }

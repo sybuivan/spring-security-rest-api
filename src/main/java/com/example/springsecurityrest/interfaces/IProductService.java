@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface IProductService {
     Product addProduct(Product product);
-    Product updateProduct(Product product);
+    Product updateProduct(Long productId, Product product);
 
     List<Product> getProductList(String productName);
 

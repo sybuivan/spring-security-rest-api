@@ -1,6 +1,6 @@
 package com.example.springsecurityrest.controller;
 
-import com.example.springsecurityrest.constants.Status;
+import com.example.springsecurityrest.constants.StatusEnum;
 import com.example.springsecurityrest.dto.OrderDto;
 import com.example.springsecurityrest.interfaces.IOrderService;
 import com.example.springsecurityrest.models.OrderItem;
@@ -25,7 +25,7 @@ public class OrderController {
     public ResponseEntity<?> orderProduct(@Valid @RequestBody OrderDto orderDto) {
         List<OrderItem> orderItemList = orderService.orderProduct(orderDto);
 
-        return ResponseEntity.ok().body(new ResponseObject("/api/order success", Status.SUCCESS));
+        return ResponseEntity.ok().body(new ResponseObject("/api/order success", StatusEnum.SUCCESS));
     }
 
 }

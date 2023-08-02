@@ -1,6 +1,6 @@
 package com.example.springsecurityrest.constants;
 
-public enum Status {
+public enum StatusEnum {
     FAILED, SUCCESS, PENDING
 }
 

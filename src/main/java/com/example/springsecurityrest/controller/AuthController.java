@@ -1,7 +1,7 @@
 package com.example.springsecurityrest.controller;
 
 import com.example.springsecurityrest.config.JwtConfig;
-import com.example.springsecurityrest.constants.Status;
+import com.example.springsecurityrest.constants.StatusEnum;
 import com.example.springsecurityrest.dto.LoginDto;
 import com.example.springsecurityrest.dto.RefreshTokenDto;
 import com.example.springsecurityrest.dto.SignUpDto;
@@ -71,7 +71,7 @@ public class AuthController {
           loginDto.getUsernameOrEmail());
 
         if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("User not found with userName or email", Status.FAILED));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("User not found with userName or email", StatusEnum.FAILED));
         }
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean isMactch = passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword());
@@ -81,9 +81,9 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(), loginDto.getPassword()));
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("User signed-in successfully!.", Status.SUCCESS, user));
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("User signed-in successfully!.", StatusEnum.SUCCESS, user));
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("Password does not match stored value", Status.FAILED));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("Password does not match stored value", StatusEnum.FAILED));
         }
     }
 
@@ -122,7 +122,7 @@ public class AuthController {
           loginDto.getUsernameOrEmail());
 
         if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("User not found with userName or email", Status.FAILED));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("User not found with userName or email", StatusEnum.FAILED));
         }
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         boolean isMactch = passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword());
@@ -154,7 +154,7 @@ public class AuthController {
                   user.get().getUsername(), user.get().getEmail(), roleList));
 
         } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("Password does not match stored value", Status.FAILED));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("Password does not match stored value", StatusEnum.FAILED));
         }
     }
 
