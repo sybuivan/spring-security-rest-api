@@ -24,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
 
 		User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail).orElse(null);
-		System.out.println("vao loaduserByUserName");
+
 		Set<GrantedAuthority> authorities = user
                 .getRoles()
                 .stream()

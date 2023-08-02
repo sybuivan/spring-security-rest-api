@@ -1,8 +1,12 @@
 package com.example.springsecurityrest.controller;
 
+import com.example.springsecurityrest.constants.Status;
 import com.example.springsecurityrest.dto.OrderDto;
-import com.example.springsecurityrest.interfaces.IOrder;
-import com.example.springsecurityrest.services.OrderService;
+import com.example.springsecurityrest.interfaces.IOrderService;
+import com.example.springsecurityrest.models.OrderItem;
+import com.example.springsecurityrest.payload.response.ResponseObject;
+import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,14 +17,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/order")
 public class OrderController {
+
     @Autowired
-    private IOrder orderService;
+    private IOrderService orderService;
 
     @PostMapping("")
-    public ResponseEntity<?> orderProduct(@RequestBody OrderDto orderDto) {
-        orderService.orderProduct(orderDto);
+    public ResponseEntity<?> orderProduct(@Valid @RequestBody OrderDto orderDto) {
+        List<OrderItem> orderItemList = orderService.orderProduct(orderDto);
 
-        return ResponseEntity.ok().body("null");
+        return ResponseEntity.ok().body(new ResponseObject("/api/order success", Status.SUCCESS));
     }
 
 }

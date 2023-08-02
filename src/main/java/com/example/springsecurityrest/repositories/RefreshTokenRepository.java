@@ -6,7 +6,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
+
     RefreshToken findByToken(String token);
 
     int deleteByUserId(Long userId);
+
+    boolean existsByUserId(Long userId);
 }

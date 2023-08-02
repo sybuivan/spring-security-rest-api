@@ -5,14 +5,13 @@ import com.example.springsecurityrest.interfaces.IRefreshToken;
 import com.example.springsecurityrest.models.RefreshToken;
 import com.example.springsecurityrest.repositories.RefreshTokenRepository;
 import com.example.springsecurityrest.repositories.UserRepository;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class RefreshTokenService implements IRefreshToken {
@@ -45,7 +44,8 @@ public class RefreshTokenService implements IRefreshToken {
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
-            throw new TokenRefreshException(token.getToken(), "Refresh token was expired. Please make a new signin request");
+            throw new TokenRefreshException(token.getToken(),
+                "Refresh token was expired. Please make a new signin request");
         }
         return token;
     }
@@ -54,5 +54,10 @@ public class RefreshTokenService implements IRefreshToken {
     @Override
     public int deleteByUserId(Long userId) {
         return refreshTokenRepository.deleteByUserId(userRepository.findById(userId).get().getId());
+    }
+
+    @Override
+    public boolean existsByUserId(Long userId) {
+        return refreshTokenRepository.existsByUserId(userId);
     }
 }
