@@ -8,15 +8,16 @@ import lombok.Setter;
 @Setter
 @Getter
 public class OrderItem {
-    private int quantity;
 
-    @Id
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "orderId",nullable = false)
-    private Order order;
+  private int quantity;
 
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "productId", nullable = false)
-    private Product product;
+  @Id
+  @ManyToOne(cascade = CascadeType.ALL)
+  @JoinColumn(name = "orderId", nullable = false)
+  private Order order;
+
+  @Id
+  @ManyToOne
+  @JoinColumn(name = "productId", nullable = false)
+  private Product product;
 }

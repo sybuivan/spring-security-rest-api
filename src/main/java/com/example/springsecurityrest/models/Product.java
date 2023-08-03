@@ -16,19 +16,20 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long productId;
 
-    @NotBlank(message = "productName not empty")
-    private String productName;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long productId;
 
-    @Min(value = 0)
-    @NotNull(message = "price not empty")
-    private int price;
+  @NotBlank(message = "productName not empty")
+  private String productName;
+
+  @Min(value = 0)
+  @NotNull(message = "price not empty")
+  private int price;
 
 //    @NotBlank(message = "imageURL not empty")
 //    private String imageURl;
 
-    private String description;
+  private String description;
 }

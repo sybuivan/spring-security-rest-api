@@ -5,13 +5,13 @@ import java.util.Optional;
 
 public interface IRefreshToken {
 
-    public Optional<RefreshToken> findByToken(String token);
+  public Optional<RefreshToken> findByToken(String token);
 
-    RefreshToken createRefreshToken(Long userId);
+  RefreshToken createRefreshToken(Long userId);
 
-    RefreshToken verifyExpiration(RefreshToken token);
+  RefreshToken verifyExpiration(RefreshToken token);
 
-    int deleteByUserId(Long userId);
+  int deleteByUserId(Long userId);
 
-    boolean existsByUserId(Long userId);
+  boolean existsByUserId(Long userId);
 }

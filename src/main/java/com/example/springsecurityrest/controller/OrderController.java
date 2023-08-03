@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/order")
 public class OrderController {
 
-    @Autowired
-    private IOrderService orderService;
+  @Autowired
+  private IOrderService orderService;
 
-    @PostMapping("")
-    public ResponseEntity<?> orderProduct(@Valid @RequestBody OrderDto orderDto) {
-        List<OrderItem> orderItemList = orderService.orderProduct(orderDto);
+  @PostMapping("")
+  public ResponseEntity<?> orderProduct(@Valid @RequestBody OrderDto orderDto) {
+    List<OrderItem> orderItemList = orderService.orderProduct(orderDto);
 
-        return ResponseEntity.ok().body(new ResponseObject("/api/order success", StatusEnum.SUCCESS));
-    }
+    return ResponseEntity.ok().body(new ResponseObject("/api/order success", StatusEnum.SUCCESS));
+  }
 
 }

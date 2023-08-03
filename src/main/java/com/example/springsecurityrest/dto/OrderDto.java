@@ -12,11 +12,11 @@ import lombok.Setter;
 @Data
 public class OrderDto {
 
-    @NotNull(message = "Userid not empty")
-    private Long userId;
+  @NotNull(message = "Userid not empty")
+  private Long userId;
 
-    @Size.List({
-        @Size(min = 1, message = "orderItems not empty")
-    })
-    private List<OrderItemRequestDto> orderItems;
+  @Size.List({
+      @Size(min = 1, message = "orderItems not empty")
+  })
+  private List<OrderItemRequestDto> orderItems;
 }

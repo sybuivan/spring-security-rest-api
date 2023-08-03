@@ -1,7 +1,6 @@
 package com.example.springsecurityrest.config;
 
 import com.example.springsecurityrest.exception.CustomAccessDeniedHandler;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -23,60 +22,63 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
-	
-	@SuppressWarnings("unused")
-	private UserDetailsService userDetailsService;
-	@Autowired
-			@Qualifier("customAuthenticationEntryPoint")
-	AuthenticationEntryPoint authenticationEntryPoint;
 
-	@Autowired
-	@Lazy
-	private JwtAuthenticationFilter jwtRequestFilter;
+  @SuppressWarnings("unused")
+  private UserDetailsService userDetailsService;
+  @Autowired
+  @Qualifier("customAuthenticationEntryPoint")
+  AuthenticationEntryPoint authenticationEntryPoint;
 
-	public SecurityConfig(UserDetailsService userDetailsService) {
-		this.userDetailsService = userDetailsService;
-	}
+  @Autowired
+  @Lazy
+  private JwtAuthenticationFilter jwtRequestFilter;
 
-	@Bean
-	public static PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+  public SecurityConfig(UserDetailsService userDetailsService) {
+    this.userDetailsService = userDetailsService;
+  }
 
-	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
-			throws Exception {
-		return configuration.getAuthenticationManager();
-	}
+  @Bean
+  public static PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeHttpRequests((authorize) ->
-				{
-					try {
-						authorize
-								.requestMatchers("/api/auth/**").permitAll()
-								.requestMatchers(HttpMethod.GET, "/api/product").authenticated()
-								.requestMatchers(HttpMethod.POST, "/api/product").hasRole("ADMIN")
-								.requestMatchers(HttpMethod.PUT, "/api/product").hasRole("ADMIN")
-								.requestMatchers(HttpMethod.DELETE, "/api/product/{productId}").hasRole("ADMIN")
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+      throws Exception {
+    return configuration.getAuthenticationManager();
+  }
 
-								.anyRequest().authenticated()
-								.and()
+  @Bean
+  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf().disable().authorizeHttpRequests((authorize) ->
+            {
+              try {
+                authorize
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/product").authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/product").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PUT, "/api/product").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/product/{productId}").hasRole("ADMIN")
+
+                    .anyRequest().authenticated()
+                    .and()
 //								.httpBasic()
 //								.and()
-								.exceptionHandling()
-								.authenticationEntryPoint(authenticationEntryPoint)
-								.accessDeniedHandler(new CustomAccessDeniedHandler())
-						;
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-		)
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+                    .exceptionHandling()
+                    .authenticationEntryPoint(authenticationEntryPoint)
+                    .accessDeniedHandler(new CustomAccessDeniedHandler())
+                ;
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+            }
+        )
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
-		return http.build();
-	}
+    return http.build();
+  }
 }

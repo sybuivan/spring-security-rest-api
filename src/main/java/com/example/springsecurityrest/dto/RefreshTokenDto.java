@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RefreshTokenDto {
-    @NotBlank(message = "refreshToken not empty")
-    private String refreshToken;
+
+  @NotBlank(message = "refreshToken not empty")
+  private String refreshToken;
 }

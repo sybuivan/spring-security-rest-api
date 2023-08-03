@@ -21,18 +21,19 @@ import lombok.Setter;
 @Setter
 @Data
 public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long orderId;
-    private Date orderDate;
-    private boolean status;
-    private int totalPrice;
 
-    @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST,
-        CascadeType.REMOVE}, orphanRemoval = true)
-    private List<OrderItem> orderItems;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long orderId;
+  private Date orderDate;
+  private boolean status;
+  private int totalPrice;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", nullable = false)
-    private User user;
+  @OneToMany(mappedBy = "order", cascade = {CascadeType.PERSIST,
+      CascadeType.REMOVE}, orphanRemoval = true)
+  private List<OrderItem> orderItems;
+
+  @ManyToOne
+  @JoinColumn(name = "userId", nullable = false)
+  private User user;
 }

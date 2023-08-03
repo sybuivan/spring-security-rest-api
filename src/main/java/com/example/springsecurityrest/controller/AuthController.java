@@ -42,146 +42,154 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+  @Autowired
+  private AuthenticationManager authenticationManager;
 
   @Autowired
   private IUserService userService;
 
-    @Autowired
-    private RoleRepository roleRepository;
+  @Autowired
+  private RoleRepository roleRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+  @Autowired
+  private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private IRefreshToken refreshTokenService;
+  @Autowired
+  private IRefreshToken refreshTokenService;
 
-    @Autowired
-    private JwtConfig jwtConfig;
+  @Autowired
+  private JwtConfig jwtConfig;
 
 //	@GetMapping("/users-webclient")
 //	public Flux<UserWebClient> getUsers() {
 //		return productServiceImp.getUsers();
 //	}
 
-    @PostMapping("/signin")
-    public ResponseEntity<ResponseObject> authenticateUser(@RequestBody LoginDto loginDto) {
-      Optional<User> user = userService.findByUsernameOrEmail(loginDto.getUsernameOrEmail(),
-          loginDto.getUsernameOrEmail());
+  @PostMapping("/signin")
+  public ResponseEntity<ResponseObject> authenticateUser(@RequestBody LoginDto loginDto) {
+    Optional<User> user = userService.findByUsernameOrEmail(loginDto.getUsernameOrEmail(),
+        loginDto.getUsernameOrEmail());
 
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("User not found with userName or email", StatusEnum.FAILED));
-        }
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        boolean isMactch = passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword());
+    if (user.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(new ResponseObject("User not found with userName or email", StatusEnum.FAILED));
+    }
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    boolean isMactch = passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword());
 
-        if (isMactch) {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(), loginDto.getPassword()));
+    if (isMactch) {
+      Authentication authentication = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(),
+              loginDto.getPassword()));
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject("User signed-in successfully!.", StatusEnum.SUCCESS, user));
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("Password does not match stored value", StatusEnum.FAILED));
-        }
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+      return ResponseEntity.status(HttpStatus.OK)
+          .body(new ResponseObject("User signed-in successfully!.", StatusEnum.SUCCESS, user));
+    } else {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(new ResponseObject("Password does not match stored value", StatusEnum.FAILED));
+    }
+  }
+
+  @PostMapping("/signup")
+  public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto) {
+
+    // add check for username exists in a DB
+    if (userService.existsByUsername(signUpDto.getUsername())) {
+      return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignUpDto signUpDto) {
-
-        // add check for username exists in a DB
-      if (userService.existsByUsername(signUpDto.getUsername())) {
-        return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
-      }
-
-        // add check for email exists in DB
-      if (userService.existsByEmail(signUpDto.getEmail())) {
-        return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
-      }
-
-        // create user object
-        User user = new User();
-        user.setName(signUpDto.getName());
-        user.setUsername(signUpDto.getUsername());
-        user.setEmail(signUpDto.getEmail());
-        user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
-
-        Role roles = roleRepository.findByName(com.example.springsecurityrest.constants.Role.ROLE_ADMIN).get();
-
-        user.setRoles(Collections.singleton(roles));
-
-      userService.createUser(user);
-
-        return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+    // add check for email exists in DB
+    if (userService.existsByEmail(signUpDto.getEmail())) {
+      return new ResponseEntity<>("Email is already taken!", HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/login-jwt")
-    public ResponseEntity<?> loginJwt(@Valid @RequestBody LoginDto loginDto) {
-      Optional<User> user = userService.findByUsernameOrEmail(loginDto.getUsernameOrEmail(),
-          loginDto.getUsernameOrEmail());
+    // create user object
+    User user = new User();
+    user.setName(signUpDto.getName());
+    user.setUsername(signUpDto.getUsername());
+    user.setEmail(signUpDto.getEmail());
+    user.setPassword(passwordEncoder.encode(signUpDto.getPassword()));
 
-        if (user.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("User not found with userName or email", StatusEnum.FAILED));
-        }
-        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        boolean isMactch = passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword());
+    Role roles = roleRepository.findByName(
+        com.example.springsecurityrest.constants.Role.ROLE_ADMIN).get();
 
-        if (isMactch) {
-          Authentication authentication = authenticationManager.authenticate(
-              new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(),
-                  loginDto.getPassword()));
+    user.setRoles(Collections.singleton(roles));
 
-          SecurityContextHolder.getContext().setAuthentication(authentication);
+    userService.createUser(user);
 
-          List<String> roleList = authentication.getAuthorities().stream()
-              .map(GrantedAuthority::getAuthority)
-              .collect(Collectors.toList());
+    return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
+  }
 
-          final String token = jwtConfig.generateToken(loginDto.getUsernameOrEmail(), roleList);
+  @PostMapping("/login-jwt")
+  public ResponseEntity<?> loginJwt(@Valid @RequestBody LoginDto loginDto) {
+    Optional<User> user = userService.findByUsernameOrEmail(loginDto.getUsernameOrEmail(),
+        loginDto.getUsernameOrEmail());
 
-          boolean isExitsUserToken = refreshTokenService.existsByUserId(user.get().getId());
-          if (isExitsUserToken) {
-            refreshTokenService.deleteByUserId(user.get().getId());
-          }
-
-          RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.get().getId());
-
-          Claims claims = jwtConfig.extractAllClaims(token);
-
-          return ResponseEntity.ok(
-              new JwtResponse(token, refreshToken.getToken(), user.get().getId(),
-                  user.get().getUsername(), user.get().getEmail(), roleList));
-
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject("Password does not match stored value", StatusEnum.FAILED));
-        }
+    if (user.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(new ResponseObject("User not found with userName or email", StatusEnum.FAILED));
     }
+    BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    boolean isMactch = passwordEncoder.matches(loginDto.getPassword(), user.get().getPassword());
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser() {
-      UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
-          .getPrincipal();
-      Optional<User> user = userService.findByUsernameOrEmail(userDetails.getUsername(),
-          userDetails.getUsername());
+    if (isMactch) {
+      Authentication authentication = authenticationManager.authenticate(
+          new UsernamePasswordAuthenticationToken(loginDto.getUsernameOrEmail(),
+              loginDto.getPassword()));
 
+      SecurityContextHolder.getContext().setAuthentication(authentication);
+
+      List<String> roleList = authentication.getAuthorities().stream()
+          .map(GrantedAuthority::getAuthority)
+          .collect(Collectors.toList());
+
+      final String token = jwtConfig.generateToken(loginDto.getUsernameOrEmail(), roleList);
+
+      boolean isExitsUserToken = refreshTokenService.existsByUserId(user.get().getId());
+      if (isExitsUserToken) {
         refreshTokenService.deleteByUserId(user.get().getId());
-        return ResponseEntity.ok(new MessageResponse("Log out successful!"));
-    }
+      }
 
-    @PostMapping("/refreshToken")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenDto refreshTokenDto) {
-        String requestRefreshToken = refreshTokenDto.getRefreshToken();
+      RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.get().getId());
 
-        return refreshTokenService.findByToken(requestRefreshToken)
-                .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUser)
-                .map(user -> {
-                    List<String> roleList = user.getRoles().stream().map(Role::getName).collect(Collectors.toList());
-                    String token = jwtConfig.generateToken(user.getUsername(), roleList);
-                    return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
-                })
-                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
-                        "Refresh token is not in database!"));
+      Claims claims = jwtConfig.extractAllClaims(token);
+
+      return ResponseEntity.ok(
+          new JwtResponse(token, refreshToken.getToken(), user.get().getId(),
+              user.get().getUsername(), user.get().getEmail(), roleList));
+
+    } else {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body(new ResponseObject("Password does not match stored value", StatusEnum.FAILED));
     }
+  }
+
+  @PostMapping("/logout")
+  public ResponseEntity<?> logoutUser() {
+    UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
+        .getPrincipal();
+    Optional<User> user = userService.findByUsernameOrEmail(userDetails.getUsername(),
+        userDetails.getUsername());
+
+    refreshTokenService.deleteByUserId(user.get().getId());
+    return ResponseEntity.ok(new MessageResponse("Log out successful!"));
+  }
+
+  @PostMapping("/refreshToken")
+  public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenDto refreshTokenDto) {
+    String requestRefreshToken = refreshTokenDto.getRefreshToken();
+
+    return refreshTokenService.findByToken(requestRefreshToken)
+        .map(refreshTokenService::verifyExpiration)
+        .map(RefreshToken::getUser)
+        .map(user -> {
+          List<String> roleList = user.getRoles().stream().map(Role::getName)
+              .collect(Collectors.toList());
+          String token = jwtConfig.generateToken(user.getUsername(), roleList);
+          return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
+        })
+        .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
+            "Refresh token is not in database!"));
+  }
 }

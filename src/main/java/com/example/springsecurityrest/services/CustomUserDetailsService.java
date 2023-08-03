@@ -17,22 +17,22 @@ import com.example.springsecurityrest.repositories.UserRepository;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-	@Autowired
-	private UserRepository userRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-	@Override
-	public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+  @Override
+  public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
 
-		User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail).orElse(null);
+    User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail).orElse(null);
 
-		Set<GrantedAuthority> authorities = user
-                .getRoles()
-                .stream()
-                .map((role) -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toSet());
+    Set<GrantedAuthority> authorities = user
+        .getRoles()
+        .stream()
+        .map((role) -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toSet());
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(),
-                user.getPassword(),
-                authorities);
-	}
+    return new org.springframework.security.core.userdetails.User(user.getEmail(),
+        user.getPassword(),
+        authorities);
+  }
 
 }

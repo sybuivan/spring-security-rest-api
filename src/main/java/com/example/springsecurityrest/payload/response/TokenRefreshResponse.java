@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class TokenRefreshResponse {
-    private String token;
-    private String refreshToken;
+
+  private String token;
+  private String refreshToken;
 }

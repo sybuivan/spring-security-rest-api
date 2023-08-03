@@ -20,72 +20,80 @@ import java.util.Optional;
 @RequestMapping("/api/product")
 public class ProductController {
 
-    @Autowired
-    IProductService productService;
+  @Autowired
+  IProductService productService;
 
-    @Autowired
-    private IRefreshToken refreshToken;
+  @Autowired
+  private IRefreshToken refreshToken;
 
-    @GetMapping("")
-    ResponseEntity<ResponseObject>  getProductList(@RequestParam(required = false, defaultValue = "") String productName) {
-        List<Product> productList = productService.getProductList(productName);
-        ResponseObject responseObject = new ResponseObject(MessageEnum.GET.getFormattedMessage("product list"),
-                StatusEnum.SUCCESS,productList);
-        return ResponseEntity.status(HttpStatus.OK).body(responseObject);
+  @GetMapping("")
+  ResponseEntity<ResponseObject> getProductList(
+      @RequestParam(required = false, defaultValue = "") String productName) {
+    List<Product> productList = productService.getProductList(productName);
+    ResponseObject responseObject = new ResponseObject(
+        MessageEnum.GET.getFormattedMessage("product list"),
+        StatusEnum.SUCCESS, productList);
+    return ResponseEntity.status(HttpStatus.OK).body(responseObject);
+  }
+
+  @PostMapping("")
+  @RolesAllowed("ROLE_ADMIN")
+  ResponseEntity<ResponseObject> postProduct(@RequestBody Product product) {
+
+    List<Product> productList = productService.findByProductNameAndPrice(
+        product.getProductName(), product.getPrice()
+    );
+    if (productList.size() == 0) {
+      ResponseObject responseObject = new ResponseObject(
+          MessageEnum.CREATE.getFormattedMessage("product"),
+          StatusEnum.SUCCESS, productService.addProduct(product));
+
+      return ResponseEntity.status(HttpStatus.CREATED).body(responseObject);
+    } else {
+      ResponseObject responseObject = new ResponseObject("Product already exists",
+          StatusEnum.FAILED);
+
+      return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseObject);
     }
+  }
 
-    @PostMapping("")
-    @RolesAllowed("ROLE_ADMIN")
-    ResponseEntity<ResponseObject> postProduct(@RequestBody Product product) {
+  @GetMapping("/{productId}")
+  ResponseEntity<?> getProductById(@PathVariable Long productId) {
+    Optional<Product> optionalProduct = productService.getProductById(productId);
 
-        List<Product> productList = productService.findByProductNameAndPrice(
-                product.getProductName(), product.getPrice()
-        );
-        if(productList.size() == 0) {
-            ResponseObject responseObject = new ResponseObject(MessageEnum.CREATE.getFormattedMessage("product"),
-                    StatusEnum.SUCCESS, productService.addProduct(product));
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseObject);
-        } else {
-            ResponseObject responseObject = new ResponseObject("Product already exists",
-                    StatusEnum.FAILED);
-
-            return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(responseObject);
-        }
-    }
-
-    @GetMapping("/{productId}")
-    ResponseEntity<?> getProductById(@PathVariable Long productId) {
-        Optional<Product> optionalProduct = productService.getProductById(productId);
-
-        if(optionalProduct.isPresent()) {
-            Product productPresent = optionalProduct.get();
-            return ResponseEntity.ok(new ResponseObject(MessageEnum.GET.getFormattedMessage("product"), StatusEnum.SUCCESS, productPresent));
+    if (optionalProduct.isPresent()) {
+      Product productPresent = optionalProduct.get();
+      return ResponseEntity.ok(
+          new ResponseObject(MessageEnum.GET.getFormattedMessage("product"), StatusEnum.SUCCESS,
+              productPresent));
 //            return ResponseEntity.ok(productPresent);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject(
-                MessageEnum.NOT_FOUND.getFormattedMessage("product", productId), StatusEnum.FAILED
-            ));
-        }
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject(
+          MessageEnum.NOT_FOUND.getFormattedMessage("product", productId), StatusEnum.FAILED
+      ));
     }
+  }
 
-    @DeleteMapping("/{productId}")
-    ResponseEntity<ResponseObject> deleteProductById(@PathVariable Long productId) {
-        Optional<Product> optionalProduct = productService.getProductById(productId);
+  @DeleteMapping("/{productId}")
+  ResponseEntity<ResponseObject> deleteProductById(@PathVariable Long productId) {
+    Optional<Product> optionalProduct = productService.getProductById(productId);
 
-        if(optionalProduct.isPresent()) {
-            productService.deleteProductById(productId);
-            return ResponseEntity.ok(new ResponseObject(MessageEnum.DELETE.getFormattedMessage("product"), StatusEnum.SUCCESS));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject(
-                    MessageEnum.NOT_FOUND.getFormattedMessage("product", productId), StatusEnum.FAILED
-            ));
-        }
+    if (optionalProduct.isPresent()) {
+      productService.deleteProductById(productId);
+      return ResponseEntity.ok(new ResponseObject(MessageEnum.DELETE.getFormattedMessage("product"),
+          StatusEnum.SUCCESS));
+    } else {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject(
+          MessageEnum.NOT_FOUND.getFormattedMessage("product", productId), StatusEnum.FAILED
+      ));
     }
+  }
 
-    @PutMapping("/{productId}")
-    ResponseEntity<?> updateProductById(@PathVariable Long productId, @Valid @RequestBody Product product) {
-           return ResponseEntity.status(HttpStatus.OK).body(new ResponseObject(MessageEnum.UPDATE.getFormattedMessage("product"), StatusEnum.SUCCESS,
-               productService.updateProduct(productId, product)));
-    }
+  @PutMapping("/{productId}")
+  ResponseEntity<?> updateProductById(@PathVariable Long productId,
+      @Valid @RequestBody Product product) {
+    return ResponseEntity.status(HttpStatus.OK).body(
+        new ResponseObject(MessageEnum.UPDATE.getFormattedMessage("product"), StatusEnum.SUCCESS,
+            productService.updateProduct(productId, product)));
+  }
 }

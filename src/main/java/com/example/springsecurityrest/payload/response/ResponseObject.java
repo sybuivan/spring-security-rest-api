@@ -12,18 +12,19 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 public class ResponseObject<T> {
-    private String message;
-    private StatusEnum status;
-    private T data;
 
-    public ResponseObject(String message, StatusEnum status) {
-        this.message = message;
-        this.status = status;
-    }
+  private String message;
+  private StatusEnum status;
+  private T data;
 
-    public ResponseObject(String message, StatusEnum status, T data) {
-        this.status = status;
-        this.message = message;
-        this.data = data;
-    }
+  public ResponseObject(String message, StatusEnum status) {
+    this.message = message;
+    this.status = status;
+  }
+
+  public ResponseObject(String message, StatusEnum status, T data) {
+    this.status = status;
+    this.message = message;
+    this.data = data;
+  }
 }

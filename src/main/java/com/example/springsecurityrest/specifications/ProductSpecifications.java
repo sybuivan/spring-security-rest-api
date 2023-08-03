@@ -9,15 +9,15 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSpecifications implements Specification<Product> {
 
-    private final String productName;
+  private final String productName;
 
-    public ProductSpecifications(String productName) {
-        this.productName = productName;
-    }
+  public ProductSpecifications(String productName) {
+    this.productName = productName;
+  }
 
-    @Override
-    public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query,
-                                 CriteriaBuilder criteriaBuilder) {
-        return criteriaBuilder.like(root.get("productName"), "%" + productName + "%");
-    }
+  @Override
+  public Predicate toPredicate(Root<Product> root, CriteriaQuery<?> query,
+      CriteriaBuilder criteriaBuilder) {
+    return criteriaBuilder.like(root.get("productName"), "%" + productName + "%");
+  }
 }

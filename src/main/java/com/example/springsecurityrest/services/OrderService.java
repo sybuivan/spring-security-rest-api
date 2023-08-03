@@ -22,49 +22,50 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrderService implements IOrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
-    @Autowired
-    private UserRepository userRepository;
+  @Autowired
+  private OrderRepository orderRepository;
+  @Autowired
+  private UserRepository userRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+  @Autowired
+  private ProductRepository productRepository;
 
 
-    @Override
-    public List<OrderItem> orderProduct(OrderDto orderDto) {
-        int totalPrice = 0;
-        Order order = new Order();
-        List<OrderItem> orderItemList = new ArrayList<>();
+  @Override
+  public List<OrderItem> orderProduct(OrderDto orderDto) {
+    int totalPrice = 0;
+    Order order = new Order();
+    List<OrderItem> orderItemList = new ArrayList<>();
 
-        User user = userRepository.findById(orderDto.getUserId()).orElse(null);
-        List<OrderItemRequestDto> orderItems = orderDto.getOrderItems();
+    User user = userRepository.findById(orderDto.getUserId()).orElse(null);
+    List<OrderItemRequestDto> orderItems = orderDto.getOrderItems();
 
-        if (orderItems != null && orderItems.size() > 0) {
-            for (OrderItemRequestDto item : orderItems) {
-                OrderItem orderItem = new OrderItem();
+    if (orderItems != null && orderItems.size() > 0) {
+      for (OrderItemRequestDto item : orderItems) {
+        OrderItem orderItem = new OrderItem();
 
-                Optional<Product> productOptional = productRepository.findById(item.getProductId());
-                if (productOptional.isPresent()) {
-                    Product product = productOptional.get();
-                    totalPrice += product.getPrice() * item.getQuantity();
-                    orderItem.setProduct(product);
-                    orderItem.setQuantity(item.getQuantity());
-                    orderItem.setOrder(order);
-                    orderItemList.add(orderItem);
-                } else {
-                    throw new ResourceNotFoundException(MessageEnum.NOT_FOUND.getFormattedMessage("product", item.getProductId()));
-                }
-            }
+        Optional<Product> productOptional = productRepository.findById(item.getProductId());
+        if (productOptional.isPresent()) {
+          Product product = productOptional.get();
+          totalPrice += product.getPrice() * item.getQuantity();
+          orderItem.setProduct(product);
+          orderItem.setQuantity(item.getQuantity());
+          orderItem.setOrder(order);
+          orderItemList.add(orderItem);
+        } else {
+          throw new ResourceNotFoundException(
+              MessageEnum.NOT_FOUND.getFormattedMessage("product", item.getProductId()));
         }
-
-        order.setOrderDate(new Date());
-        order.setOrderItems(orderItemList);
-        order.setTotalPrice(totalPrice);
-        order.setUser(user);
-
-        orderRepository.save(order);
-
-        return order.getOrderItems();
+      }
     }
+
+    order.setOrderDate(new Date());
+    order.setOrderItems(orderItemList);
+    order.setTotalPrice(totalPrice);
+    order.setUser(user);
+
+    orderRepository.save(order);
+
+    return order.getOrderItems();
+  }
 }
